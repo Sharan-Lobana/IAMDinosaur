@@ -205,7 +205,7 @@ GameManipulator.startNewGame = function (next) {
       next && next();
     };
 
-    // Press space to begin game (repetidelly)
+    // Press space to begin game (repeatedly)
     _startKeyInterval = setInterval(function (){
       // Due to dino slowly gliding over the screen after multiple restarts, its better to just reload the page
       GameManipulator.reloadPage();

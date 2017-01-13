@@ -12,6 +12,7 @@
     "async": "^1.5.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^2.5.2",
+    "keypress": "^0.2.1",
     "lodash": "^3.10.1",
     "robotjs": "^0.3.6",
     "synaptic": "^1.0.5"
