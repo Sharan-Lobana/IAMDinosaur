@@ -31,7 +31,7 @@ DataCollection.saveInstance = function(res)
   instance.push(DataCollection.speed);
   instance.push(DataCollection.size);
   instance.push(Date.now() - DataCollection.timeInMs);
-  DataCollection.push(res);
+  instance.push(res);
   DataCollection.manualData.push(instance);
   DataCollection.numInstances++;
 

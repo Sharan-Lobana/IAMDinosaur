@@ -771,18 +771,18 @@
                 this.tRex.reset();
                 this.play();
             }
-            var xmlhttp = new XMLHttpRequest();
-
-            xmlhttp.open("GET","http://localhost:8001/keyup", true);
-            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-            xmlhttp.onreadystatechange = function() {
-              //Call a function when the state changes.
-                if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                    console.log(xmlhttp.responseText);
-                }
-              }
-            xmlhttp.send();
+            // var xmlhttp = new XMLHttpRequest();
+            //
+            // xmlhttp.open("GET","http://localhost:8001/keyup", true);
+            // xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //
+            // xmlhttp.onreadystatechange = function() {
+            //   //Call a function when the state changes.
+            //     if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            //         console.log(xmlhttp.responseText);
+            //     }
+            //   }
+            // xmlhttp.send();
         },
 
         /**
