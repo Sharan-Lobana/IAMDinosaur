@@ -1,47 +1,59 @@
-var keypress = require('keypress');
 var fs = require('fs');
 var GameManipulator = require('./GameManipulator');
+var UI = require('./UI')
 
-var stdin = process.stdin;
-stdin.setRawMode(true);
-stdin.resume();
-stdin.setEncoding('utf8');
+var DataCollection = {
+  manualData: [],
+  numInstances: 0,
+  maxInstances: 10,
+  dataDirectory: './manualData',
+  fileNamePrefix: 'sharan_',
+};
 
-var manualData = [];
-var instance = [];
-var num_instances = 0;
-stdin.on('data', function(key){
-    if (key == '\u001B\u005B\u0041') {
-        process.stdout.write('up');
-        instance.push(GameManipulator.sensors[0].value);
-        instance.push(GameManipulator.sensors[0].speed);
-        instance.push(GameManipulator.sensors[0].size);
-        instance.push(1);
-        manualData.push(instance);
-        instance = [];
-        num_instances++;
+DataCollection.saveInstance = function(res)
+{
+  var instance = [];
+  instance.push(GameManipulator.sensors[0].value);
+  instance.push(GameManipulator.sensors[0].speed);
+  instance.push(GameManipulator.sensors[0].size);
+  instance.push(res);
+  DataCollection.manualData.push(instance);
+  DataCollection.numInstances++;
+
+  if(DataCollection.maxNumInstances != -1 && DataCollection.numInstances >= DataCollection.maxInstances)
+  {
+    DataCollection.saveToFile();
+  }
+}
+
+DataCollection.saveToFile = function()
+{
+  var annData = [];
+  for( var k in DataCollection.manualData)
+  {
+    annData.push(DataCollection.manualData[k]);
+  }
+  var fileName = DataCollection.dataDirectory+'/'+DataCollection.fileNamePrefix;
+  fileName = fileName + Date.now()+'__'+DataCollection.numInstances+'.json';
+  fs.writeFile(fileName, JSON.stringify(annData), function (err){
+    if (err) {
+      UI.logger.log('Failed to save manualData! '+err);
+    } else {
+      UI.logger.log('Saved to '+fileName);
+      DataCollection.manualData = [];
+      DataCollection.numInstances = 0;
     }
-    if (key == '\u001B\u005B\u0042') {
-        process.stdout.write('down');
-        instance.push(GameManipulator.sensors[0].value);
-        instance.push(GameManipulator.sensors[0].speed);
-        instance.push(GameManipulator.sensors[0].size);
-        instance.push(0);
-        manualData.push(instance);
-        instance = [];
-        num_instances++;
-    }
-    if (key == '\u0003') { process.exit(); }    // ctrl-c
 
-    if(num_instances >= 100)
-    {
-      //Save the manualData array to a file
-    }
-});
+    // UI.refreshFiles();
+  });
+}
 
-// fs.readFile('/etc/hosts', 'utf8', function (err,data) {
-//   if (err) {
-//     return console.log(err);
-//   }
-//   console.log(data);
-// });
+DataCollection.saveOnGameEnd = function()
+{
+  if(GameManipulator.gamestate == 'OVER' && DataCollection.numInstances > 0)
+  {
+    DataCollection.saveToFile();
+  }
+}
+
+module.exports = DataCollection;

@@ -81,7 +81,7 @@ UI.init = function (gameManipulator, learner) {
 
   // Load Tree
   UI.savesTree = UI.grid.set(9, 0, 3, 3, contrib.tree, {
-    label: 'Saved Genomes',
+    label: 'Saved GamePlays',
   });
 
 
@@ -93,7 +93,7 @@ UI.init = function (gameManipulator, learner) {
     if (item.isFile) {
       var fileName = item.name;
 
-      UI.logger.log('Loading genomes from file:');
+      UI.logger.log('Loading weights from file:');
       UI.logger.log(fileName);
 
       var genomes = require('./genomes/'+fileName);
@@ -149,8 +149,8 @@ UI.refreshFiles = function (){
   };
 
   // Populate tree
-  UI.logger.log('Reading genomes dir...')
-  var files = fs.readdirSync('./genomes');
+  UI.logger.log('Reading manualData dir...')
+  var files = fs.readdirSync('./manualData');
   for (var k in files) {
     if (files[k].indexOf('.json') >= 0) {
 
