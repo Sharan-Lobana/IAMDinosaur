@@ -697,20 +697,21 @@
                     // Duck.
                     this.tRex.setDuck(true);
                 }
+
+                //Send an ajax request to node server
+                //to record time of keypress for ducking or speeddrop
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET","http://localhost:8001/keydown/duckstart", true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xmlhttp.onreadystatechange = function() {
+                  //Call a function when the state changes.
+                    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        console.log(xmlhttp.responseText);
+                    }
+                  }
+                xmlhttp.send();
             }
-
-            var xmlhttp = new XMLHttpRequest();
-
-            xmlhttp.open("GET","http://localhost:8001/keydown", true);
-            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-            xmlhttp.onreadystatechange = function() {
-              //Call a function when the state changes.
-                if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                    console.log(xmlhttp.responseText);
-                }
-              }
-            xmlhttp.send();
         },
 
 
@@ -726,9 +727,36 @@
 
             if (this.isRunning() && isjumpKey) {
                 this.tRex.endJump();
+                //Send an ajax request to node server
+                //to record time of keypress
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET","http://localhost:8001/keyup/jumpend", true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xmlhttp.onreadystatechange = function() {
+                  //Call a function when the state changes.
+                    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        console.log(xmlhttp.responseText);
+                    }
+                  }
+                xmlhttp.send();
             } else if (Runner.keycodes.DUCK[keyCode]) {
                 this.tRex.speedDrop = false;
                 this.tRex.setDuck(false);
+
+                //Send an ajax request to node server
+                //to record the end of duck
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET","http://localhost:8001/keyup/duckend", true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xmlhttp.onreadystatechange = function() {
+                  //Call a function when the state changes.
+                    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        console.log(xmlhttp.responseText);
+                    }
+                  }
+                xmlhttp.send();
             } else if (this.crashed) {
                 // Check that enough time has elapsed before allowing jump key to restart.
                 var deltaTime = getTimeStamp() - this.time;
@@ -1771,6 +1799,19 @@
         startJump: function (speed) {
             if (!this.jumping) {
                 this.update(0, Trex.status.JUMPING);
+                //Send an ajax request to nodejs server to
+                //save the inputs at the start of the jump
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET","http://localhost:8001/keydown/jumpstart", true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xmlhttp.onreadystatechange = function() {
+                  //Call a function when the state changes.
+                    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        console.log(xmlhttp.responseText);
+                    }
+                  }
+                xmlhttp.send();
                 // Tweak the jump velocity based on the speed.
                 this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY - (speed / 10);
                 this.jumping = true;

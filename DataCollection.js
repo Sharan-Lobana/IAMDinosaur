@@ -5,18 +5,33 @@ var UI = require('./UI')
 var DataCollection = {
   manualData: [],
   numInstances: 0,
-  maxInstances: 10,
+  maxInstances: 20,
   dataDirectory: './manualData',
   fileNamePrefix: 'sharan_',
+  value:1,
+  speed:0,
+  size:1,
+  timeInMs:0,
+  isInputRecorded:false
 };
+
+DataCollection.saveCurrentInputs = function()
+{
+  DataCollection.value = GameManipulator.sensors[0].value;
+  DataCollection.speed = GameManipulator.sensors[0].speed;
+  DataCollection.size = GameManipulator.sensors[0].size;
+  DataCollection.timeInMs = Date.now();
+  DataCollection.isInputRecorded = true;
+}
 
 DataCollection.saveInstance = function(res)
 {
   var instance = [];
-  instance.push(GameManipulator.sensors[0].value);
-  instance.push(GameManipulator.sensors[0].speed);
-  instance.push(GameManipulator.sensors[0].size);
-  instance.push(res);
+  instance.push(DataCollection.value);
+  instance.push(DataCollection.speed);
+  instance.push(DataCollection.size);
+  instance.push(Date.now() - DataCollection.timeInMs);
+  DataCollection.push(res);
   DataCollection.manualData.push(instance);
   DataCollection.numInstances++;
 

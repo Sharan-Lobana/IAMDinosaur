@@ -39,7 +39,7 @@ Learner.init(GameManipulator, UI, 12, 4, 0.2);
 // Start reading game state and sensors
 setInterval(GameManipulator.readSensors, 40);
 setInterval(GameManipulator.readGameState, 200);
-setInterval(DataCollection.saveOnGameEnd,200);
+// setInterval(DataCollection.saveOnGameEnd,200);
 
 console.log("Num of instances are "+DataCollection);
 //If manual play mode is on
@@ -48,19 +48,46 @@ if(collecting)
   var server = http.createServer(function(request, response)
   {
     var path = url.parse(request.url).pathname;
-    if(path == "/keyup")
+
+    if(path == "/keydown/jumpstart" || path == "/keydown/duckstart")
     {
-      DataCollection.saveInstance(1);
+      DataCollection.saveCurrentInputs();
       UI.logger.log(path);
       response.writeHead(200, {"Content-Type": "text/plain"});
-      response.end("Up Key Recorded");
+      response.end("Inputs saved in backend");
     }
-    else if(path == "/keydown")
+    else if(path == "/keyup/jumpend")
     {
-      DataCollection.saveInstance(0);
-      UI.logger.log(path);
-      response.writeHead(200, {"Content-Type": "text/plain"});
-      response.end("Down Key Recorded");
+      if(DataCollection.isInputRecorded == true)
+      {
+        DataCollection.saveInstance(1);
+        DataCollection.isInputRecorded = false;
+        UI.logger.log(path);
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("Jump Finished");
+      }
+      else
+      {
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("No input recorded for given jumpend");
+      }
+
+    }
+    else if(path == "/keyup/duckend")
+    {
+      if(DataCollection.isInputRecorded == true)
+      {
+        DataCollection.saveInstance(0);
+        DataCollection.isInputRecorded = false;
+        UI.logger.log(path);
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("Duck Ended");
+      }
+      else
+      {
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("No input recorded for given duckend");
+      }
     }
   }).listen(8001);
 
