@@ -8,11 +8,11 @@ var DataCollection = {
   maxInstances: 20,
   dataDirectory: './manualData',
   fileNamePrefix: 'sharan_',
-  value:1,
-  speed:0,
-  size:1,
-  timeInMs:0,
-  isInputRecorded:false
+  value:1,  // Normalised distance of obstacle
+  speed:0,  // Speed of approaching obstacle
+  size:1,   // Width of obstacle
+  timeInMs:0, // Start time of keypress
+  isInputRecorded:false // Boolean value set to true on recording inputs
 };
 
 DataCollection.saveCurrentInputs = function()

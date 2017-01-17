@@ -286,7 +286,7 @@ GameManipulator.readSensors = function () {
     ];
 
     // Compute cursor forwarding
-    var forward = sensor.value * GameManipulator.width * 0.8 * sensor.length;
+    var forward = sensor.value*GameManipulator.width*0.8 * sensor.length;
 
     var end = Scanner.scanUntil(
       // console.log(
@@ -309,6 +309,7 @@ GameManipulator.readSensors = function () {
       sensor.value = (end[0] - start[0]) / (GameManipulator.width * sensor.length);
 
       // Calculate size of obstacle
+      //TODO: check the width of obstacles (currently 75)
       var endPoint = Scanner.scanUntil(
         [end[0] + 75, end[1]],
         [-2, 0],
@@ -322,6 +323,7 @@ GameManipulator.readSensors = function () {
         endPoint = end;
       }
 
+      //TODO Improve normalisation of obstacle size
       var sizeTmp = (endPoint[0] - end[0]) / 100.0;
       if (GameManipulator.points == sensor.lastScore) {
         // It's the same obstacle. Set size to "max" of both
@@ -355,12 +357,14 @@ GameManipulator.readSensors = function () {
         sensor.lastSpeeds.pop();
       }
 
+      //TODO Improve speed calculation
       // Take Average
       var avgSpeed = 0;
       for (var k in sensor.lastSpeeds) {
         avgSpeed += sensor.lastSpeeds[k] / sensor.lastSpeeds.length;
       }
 
+      //TODO: Find the purpose of subtracting 1.5 from sensor speed
       sensor.speed = Math.max(avgSpeed - 1.5, sensor.speed);
 
     }
