@@ -3,6 +3,7 @@ var GameManipulator = require('./GameManipulator');
 var UI = require('./UI')
 
 var DataCollection = {
+  +
   manualData: [],
   numInstances: 0,
   maxInstances: 20,
@@ -24,6 +25,9 @@ DataCollection.saveCurrentInputs = function()
   DataCollection.isInputRecorded = true;
 }
 
+/**
+* @param {number: which key is released(up/down) } res
+*/
 DataCollection.saveInstance = function(res)
 {
   var instance = [];
@@ -44,10 +48,13 @@ DataCollection.saveInstance = function(res)
 DataCollection.saveToFile = function()
 {
   var annData = [];
-  for( var k in DataCollection.manualData)
-  {
-    annData.push(DataCollection.manualData[k]);
-  }
+  annData = DataCollection.manualData;
+
+  // for( var k in DataCollection.manualData)
+  // {
+  //   annData.push(DataCollection.manualData[k]);
+  // }
+
   var fileName = DataCollection.dataDirectory+'/'+DataCollection.fileNamePrefix;
   fileName = fileName + Date.now()+'__'+DataCollection.numInstances+'.json';
   fs.writeFile(fileName, JSON.stringify(annData), function (err){
