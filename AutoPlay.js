@@ -1,24 +1,17 @@
 var synaptic = require('synaptic');
-var async = require('async');
-var _ = require('lodash');
+var fs = require('fs');
+// var async = require('async');
+// var _ = require('lodash');
 
+//TODO: change the learn module to autoplay module removing
+// the code of genetic algorithms
 var Architect = synaptic.Architect;
 var Network = synaptic.Network;
 
-
-var Learn = {
-
-  // Array of networks for current Genomes
-  // (Genomes will be added the key `fitness`)
-  genomes: [],
-
+var Play = {
   // Current state of learning [STOP, LEARNING]
   state: 'STOP',
-
-  // Current genome/generation tryout
-  genome: 0,
-  generation: 0,
-
+  network : {},
   // Set this, to verify genome experience BEFORE running it
   shouldCheckExperience: false,
 
@@ -26,101 +19,68 @@ var Learn = {
 
 
 // Initialize the Learner
-Learn.init = function (gameManip, ui, genomeUnits, selection, mutationProb) {
-  Learn.gm = gameManip;
-  Learn.ui = ui;
-
-  Learn.genome = 0;
-  Learn.generation = 0;
-
-  Learn.genomeUnits = genomeUnits;
-  Learn.selection = selection;
-  Learn.mutationProb = mutationProb;
+Play.init = function (gameManip, ui) {
+  Play.gm = gameManip;
+  Play.ui = ui;
 }
 
 
-// Build genomes before calling executeGeneration.
-Learn.startLearning = function () {
-
-  // Build genomes if needed
-  while (Learn.genomes.length < Learn.genomeUnits) {
-    Learn.genomes.push(Learn.buildGenome(3, 1));
-  }
-
-  Learn.executeGeneration();
-  
+Play.loadnetwork = function(fileName)
+{
+  Play.network = Network.fromJSON(JSON.parse(fs.readFileSync(fileName)));
 }
-
 
 // Given the entire generation of genomes (An array),
 // applyes method `executeGenome` for each element.
 // After all elements have completed executing:
-// 
+//
 // 1) Select best genomes
 // 2) Does cross over (except for 2 genomes)
 // 3) Does Mutation-only on remaining genomes
 // 4) Execute generation (recursivelly)
-Learn.executeGeneration = function (){
-  if (Learn.state == 'STOP') {
+Play.executeNetwork = function (){
+  if (Play.state == 'STOP') {
     return;
   }
 
-  Learn.generation++;
-  Learn.ui.logger.log('Executing generation '+Learn.generation);
+  Play.ui.logger.log('Executing network ');
 
-  Learn.genome = 0;
 
-  async.mapSeries(Learn.genomes, Learn.executeGenome, function (argument) {
 
-    // Kill worst genomes
-    Learn.genomes = Learn.selectBestGenomes(Learn.selection);
+  async.mapSeries(Play.genomes, Play.executeGenome, function (argument) {
 
-    // Copy best genomes
-    var bestGenomes = _.clone(Learn.genomes);
-
-    // Cross Over ()
-    while (Learn.genomes.length < Learn.genomeUnits - 2) {
-      // Get two random Genomes
-      var genA = _.sample(bestGenomes).toJSON();
-      var genB = _.sample(bestGenomes).toJSON();
-
-      // Cross over and Mutate
-      var newGenome = Learn.mutate(Learn.crossOver(genA, genB));
-
-      // Add to generation
-      Learn.genomes.push(Network.fromJSON(newGenome));
-    }
+    // Kill worst genome
 
     // Mutation-only
-    while (Learn.genomes.length < Learn.genomeUnits) {
+    while (Play.genomes.length < Play.genomeUnits) {
       // Get two random Genomes
       var gen = _.sample(bestGenomes).toJSON();
 
       // Cross over and Mutate
-      var newGenome = Learn.mutate(gen);
+      var newGenome = Play.mutate(gen);
 
       // Add to generation
-      Learn.genomes.push(Network.fromJSON(newGenome));
+      Play.genomes.push(Network.fromJSON(newGenome));
     }
 
-    Learn.ui.logger.log('Completed generation '+Learn.generation);
+    Play.ui.logger.log('Completed generation '+Play.generation);
 
     // Execute next generation
-    Learn.executeGeneration();
+    Play.executeNetwork();
   })
 }
 
 
 // Sort all the genomes, and delete the worst one
 // untill the genome list has selectN elements.
-Learn.selectBestGenomes = function (selectN){
-  var selected = _.sortBy(Learn.genomes, 'fitness').reverse();
+Play.selectBestGenomes = function (selectN){
+  var selected = _.sortBy(Play.genomes, 'fitness').reverse();
 
   while (selected.length > selectN) {
     selected.pop();
   }
 
-  Learn.ui.logger.log('Fitness: '+_.pluck(selected, 'fitness').join(','));
+  Play.ui.logger.log('Fitness: '+_.pluck(selected, 'fitness').join(','));
 
   return selected;
 }
@@ -131,42 +91,42 @@ Learn.selectBestGenomes = function (selectN){
 // 2) On data read, applyes the neural network, and
 //    set it's output
 // 3) When the game has ended and compute the fitness
-Learn.executeGenome = function (genome, next){
-  if (Learn.state == 'STOP') {
+Play.executeGenome = function (genome, next){
+  if (Play.state == 'STOP') {
     return;
   }
 
-  Learn.genome = Learn.genomes.indexOf(genome) + 1;
-  // Learn.ui.logger.log('Executing genome '+Learn.genome);
+  Play.genome = Play.genomes.indexOf(genome) + 1;
+  // Play.ui.logger.log('Executing genome '+Play.genome);
 
   // Check if genome has AT LEAST some experience
-  if (Learn.shouldCheckExperience) {
-    if (!Learn.checkExperience(genome)) {
+  if (Play.shouldCheckExperience) {
+    if (!Play.checkExperience(genome)) {
       genome.fitness = 0;
-      // Learn.ui.logger.log('Genome '+Learn.genome+' has no min. experience');
+      // Play.ui.logger.log('Genome '+Play.genome+' has no min. experience');
       return next();
     }
   }
 
-  Learn.gm.startNewGame(function (){
+  Play.gm.startNewGame(function (){
 
     // Reads sensor data, and apply network
-    Learn.gm.onSensorData = function (){
+    Play.gm.onSensorData = function (){
       var inputs = [
-        Learn.gm.sensors[0].value,
-        Learn.gm.sensors[0].size,
-        Learn.gm.sensors[0].speed,
+        Play.gm.sensors[0].value,
+        Play.gm.sensors[0].size,
+        Play.gm.sensors[0].speed,
       ];
       // console.log(inputs);
       // Apply to network
-      var outputs = genome.activate(inputs);
+      var outputs = Play.network.activate(inputs);
 
-      Learn.gm.setGameOutput(outputs[0]);
+      Play.gm.setGameOutput(outputs[1]);
     }
 
     // Wait game end, and compute fitness
-    Learn.gm.onGameEnd = function (points){
-      Learn.ui.logger.log('Genome '+Learn.genome+' ended. Fitness: '+points);
+    Play.gm.onGameEnd = function (points){
+      Play.ui.logger.log('Genome '+Play.genome+' ended. Fitness: '+points);
 
       // Save Genome fitness
       genome.fitness = points;
@@ -182,8 +142,8 @@ Learn.executeGenome = function (genome, next){
 // Validate if any acction occur uppon a given input (in this case, distance).
 // If genome only keeps a single activation value for any given input,
 // it will return false
-Learn.checkExperience = function (genome) {
-  
+Play.checkExperience = function (genome) {
+
   var step = 0.1, start = 0.0, stop = 1;
 
   // Inputs are default. We only want to test the first index
@@ -194,8 +154,8 @@ Learn.checkExperience = function (genome) {
     inputs[0] = k;
 
     activation = genome.activate(inputs);
-    state = Learn.gm.getDiscreteState(activation);
-    
+    state = Play.gm.getDiscreteState(activation);
+
     outputs[state] = true;
   }
 
@@ -205,25 +165,25 @@ Learn.checkExperience = function (genome) {
 
 
 // Load genomes saved from JSON file
-Learn.loadGenomes = function (genomes, deleteOthers){
+Play.loadGenomes = function (genomes, deleteOthers){
   if (deleteOthers) {
-    Learn.genomes = [];
+    Play.genomes = [];
   }
 
   var loaded = 0;
   for (var k in genomes) {
-    Learn.genomes.push(Network.fromJSON(genomes[k]));
+    Play.genomes.push(Network.fromJSON(genomes[k]));
     loaded++;
   }
 
-  Learn.ui.logger.log('Loaded '+loaded+' genomes!');
+  Play.ui.logger.log('Loaded '+loaded+' genomes!');
 }
 
 
-// Builds a new genome based on the 
+// Builds a new genome based on the
 // expected number of inputs and outputs
-Learn.buildGenome = function (inputs, outputs) {
-  Learn.ui.logger.log('Build genome '+(Learn.genomes.length+1));
+Play.buildGenome = function (inputs, outputs) {
+  Play.ui.logger.log('Build genome '+(Play.genomes.length+1));
 
   var network = new Architect.Perceptron(inputs, 4, 4, outputs);
 
@@ -233,7 +193,7 @@ Learn.buildGenome = function (inputs, outputs) {
 
 // SPECIFIC to Neural Network.
 // Those two methods convert from JSON to Array, and from Array to JSON
-Learn.crossOver = function (netA, netB) {
+Play.crossOver = function (netA, netB) {
   // Swap (50% prob.)
   if (Math.random() > 0.5) {
     var tmp = netA;
@@ -246,7 +206,7 @@ Learn.crossOver = function (netA, netB) {
   netB = _.cloneDeep(netB);
 
   // Cross over data keys
-  Learn.crossOverDataKey(netA.neurons, netB.neurons, 'bias');
+  Play.crossOverDataKey(netA.neurons, netB.neurons, 'bias');
 
   return netA;
 }
@@ -256,11 +216,11 @@ Learn.crossOver = function (netA, netB) {
 // the biases and weights of the Networks
 // (This must be done in the JSON to
 // prevent modifying the current one)
-Learn.mutate = function (net){
+Play.mutate = function (net){
   // Mutate
-  Learn.mutateDataKeys(net.neurons, 'bias', Learn.mutationProb);
-  
-  Learn.mutateDataKeys(net.connections, 'weight', Learn.mutationProb);
+  Play.mutateDataKeys(net.neurons, 'bias', Play.mutationProb);
+
+  Play.mutateDataKeys(net.connections, 'weight', Play.mutationProb);
 
   return net;
 }
@@ -268,12 +228,12 @@ Learn.mutate = function (net){
 
 // Given an Object A and an object B, both Arrays
 // of Objects:
-// 
+//
 // 1) Select a cross over point (cutLocation)
 //    randomly (going from 0 to A.length)
 // 2) Swap values from `key` one to another,
 //    starting by cutLocation
-Learn.crossOverDataKey = function (a, b, key) {
+Play.crossOverDataKey = function (a, b, key) {
   var cutLocation = Math.round(a.length * Math.random());
 
   var tmp;
@@ -290,7 +250,7 @@ Learn.crossOverDataKey = function (a, b, key) {
 // and also a `mutationRate`, randomly Mutate
 // the value of each key, if random value is
 // lower than mutationRate for each element.
-Learn.mutateDataKeys = function (a, key, mutationRate){
+Play.mutateDataKeys = function (a, key, mutationRate){
   for (var k = 0; k < a.length; k++) {
     // Should mutate?
     if (Math.random() > mutationRate) {

@@ -6,8 +6,11 @@ var Learner = require('./Learner');
 var Scanner = require('./Scanner');
 var UI = require('./UI');
 var DataCollection = require('./DataCollection');
-var collecting = true; //set it to true to collect data on manual training
-
+var config = require('./Config');
+var train = require('./CustomTrainer');
+var isCollecting = config.IS_COLLECTING_DATA; //set it to true to collect data on manual training
+var isAutoPlaying = config.IS_AUTO_PLAYING;
+var isTraining = config.IS_TRAINING;
 // Configure Robotjs
 robot.setMouseDelay(1);
 
@@ -33,7 +36,7 @@ UI.init(GameManipulator, Learner);
 
 // Initialize Learner
 
-Learner.init(GameManipulator, UI, 12, 4, 0.2);
+Play.init(GameManipulator, UI);
 
 
 // Start reading game state and sensors
@@ -43,7 +46,7 @@ setInterval(GameManipulator.readGameState, 200);
 
 console.log("Num of instances are "+DataCollection);
 //If manual play mode is on
-if(collecting)
+if(isCollecting)
 {
   var server = http.createServer(function(request, response)
   {
@@ -93,7 +96,14 @@ if(collecting)
 
   console.log("Server Initialized");
 }
-
+if(isTraining)
+{
+  train.trainNetwork();
+}
+if(isAutoPlaying)
+{
+  //doSomething.
+}
 
 
 // Start game (Example of API usage)
