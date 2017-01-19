@@ -2,12 +2,12 @@ var robot = require('robotjs');
 var http = require('http');
 var url = require('url');
 var GameManipulator = require('./GameManipulator');
-var Learner = require('./Learner');
 var Scanner = require('./Scanner');
 var UI = require('./UI');
 var DataCollection = require('./DataCollection');
 var config = require('./Config');
 var train = require('./CustomTrainer');
+var Play = require('./Play');
 var isCollecting = config.IS_COLLECTING_DATA; //set it to true to collect data on manual training
 var isAutoPlaying = config.IS_AUTO_PLAYING;
 var isTraining = config.IS_TRAINING;
@@ -32,13 +32,10 @@ if (GameManipulator.offset) {
 }
 
 // Initialize UI
-UI.init(GameManipulator, Learner);
+UI.init(GameManipulator, Play);
 
-// Initialize Learner
-
+// Initialize Play
 Play.init(GameManipulator, UI);
-
-
 // Start reading game state and sensors
 setInterval(GameManipulator.readSensors, 40);
 setInterval(GameManipulator.readGameState, 200);
@@ -46,7 +43,7 @@ setInterval(GameManipulator.readGameState, 200);
 
 console.log("Num of instances are "+DataCollection);
 //If manual play mode is on
-if(isCollecting)
+if(isCollecting == true)
 {
   var server = http.createServer(function(request, response)
   {
@@ -96,13 +93,17 @@ if(isCollecting)
 
   console.log("Server Initialized");
 }
-if(isTraining)
+if(isTraining == true)
 {
   train.trainNetwork();
 }
-if(isAutoPlaying)
+if(isAutoPlaying == true)
 {
-  //doSomething.
+  console.log("Came here.");
+  var neuralNetDir = config.NEURALNET_DATA_DIRECTORY;
+  var fileName = neuralNetDir+"/"+"sharan_1484676016339.json";
+  Play.loadnetwork(fileName);
+  Play.executeNetwork();
 }
 
 

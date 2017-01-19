@@ -224,8 +224,6 @@ GameManipulator.startNewGame = function (next) {
       GameManipulator.startNewGame(next);
     }
   }
-
-
 }
 
 // reload the page
@@ -394,10 +392,10 @@ var RELEASE = 'up';
 GameManipulator.lastOutputSet = 'NONE';
 GameManipulator.lastOutputSetTime = 0;
 
-GameManipulator.setGameOutput = function (output){
+GameManipulator.setGameOutput = function (outputs){
 
-  GameManipulator.gameOutput = output;
-  GameManipulator.gameOutputString = GameManipulator.getDiscreteState(output);
+  GameManipulator.gameOutput = outputs[1];
+  GameManipulator.gameOutputString = GameManipulator.getDiscreteState(outputs[1]);
 
   if (GameManipulator.gameOutputString == 'DOWN') {
     // Skew
@@ -416,13 +414,13 @@ GameManipulator.setGameOutput = function (output){
 
     // JUMP
     // Check if hasn't jump for more than 3 continuous secconds
-    if (Date.now() - GameManipulator.lastOutputSetTime < 3000) {
+    // if (Date.now() - GameManipulator.lastOutputSetTime < 5000) {
       robot.keyToggle('up', PRESS);
       robot.keyToggle('down', RELEASE);
-    } else {
-      robot.keyToggle('up', RELEASE);
-      robot.keyToggle('down', RELEASE);
-    }
+    // } else {
+    //   robot.keyToggle('up', RELEASE);
+    //   robot.keyToggle('down', RELEASE);
+    // }
 
   }
 
