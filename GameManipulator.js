@@ -375,7 +375,6 @@ GameManipulator.readSensors = function () {
 
   // Compute points
   GameManipulator.computePoints();
-
   // Call sensor callback (to act)
   GameManipulator.onSensorData && GameManipulator.onSensorData();
 }
@@ -415,8 +414,9 @@ GameManipulator.setGameOutput = function (outputs){
     // JUMP
     // Check if hasn't jump for more than 3 continuous secconds
     // if (Date.now() - GameManipulator.lastOutputSetTime < 5000) {
-      robot.keyToggle('up', PRESS);
       robot.keyToggle('down', RELEASE);
+      robot.keyToggle('up', PRESS);
+
     // } else {
     //   robot.keyToggle('up', RELEASE);
     //   robot.keyToggle('down', RELEASE);
@@ -432,13 +432,13 @@ GameManipulator.setGameOutput = function (outputs){
 // Simply maps an real number to string actions
 //
 GameManipulator.getDiscreteState = function (value){
-  if (value < 0.45) {
+  if (value <= 0.90) {
     return 'DOWN'
-  } else if(value > 0.55) {
+  } else if(value > 0.98  ) {
     return 'JUMP';
   }
 
-  return 'NORM';
+  // return 'NORM';
 }
 
 
