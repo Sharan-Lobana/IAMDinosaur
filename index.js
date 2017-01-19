@@ -49,6 +49,17 @@ if(isCollecting == true)
   {
     var path = url.parse(request.url).pathname;
 
+    if(path == '/norm') 
+    {
+      DataCollection.saveCurrentInputs();
+      DataCollection.saveInstance(0.5);
+      // logging mechanism
+      DataCollection.isInputRecorded = false;
+      UI.logger.log(path);
+      response.writeHead(200, {"Content-Type": "text/plain"});
+      response.end("Norm Saved");
+    }
+
     if(path == "/keydown/jumpstart" || path == "/keydown/duckstart")
     {
       DataCollection.saveCurrentInputs();
@@ -101,7 +112,7 @@ if(isAutoPlaying == true)
 {
   console.log("Came here.");
   var neuralNetDir = config.NEURALNET_DATA_DIRECTORY;
-  var fileName = neuralNetDir+"/"+"sharan_1484676016339.json";
+  var fileName = neuralNetDir+"/"+"sharan_new_1484846481377.json";
   Play.loadnetwork(fileName);
   Play.executeNetwork();
 }
