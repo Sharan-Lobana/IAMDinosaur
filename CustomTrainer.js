@@ -5,12 +5,7 @@ var fs = require('fs');
 var Architect = synaptic.Architect;
 var Trainer = synaptic.Trainer;
 var listOfJsonData = [
-  'sharan_1484519607531__20.json',
-  'sharan_1484519634461__20.json',
-  'sharan_1484519656658__20.json',
-  'sharan_1484519674253__20.json',
-  'sharan_1484519692050__20.json',
-  'sharan_1484519709638__20.json',
+  'sharan_new_1484845935717__50.json',
 ];
 
 var dataDirectory = config.DATA_DIRECTORY;
@@ -42,7 +37,7 @@ CustomTrainer.trainNetwork = function()
     // console.log(current);
     tempdict['input'] = current.slice(0,3); // Take the first three values as input
     tempdict['output'] = current.slice(3,5);  //Take the last two values as output
-    tempdict['output'][0] /= 200;
+    tempdict['output'][0] /= 200.0;
     trainingSet.push(tempdict);
   }
   console.log(trainingSet);
@@ -51,8 +46,8 @@ CustomTrainer.trainNetwork = function()
 
 
   trainer.train(trainingSet,{
-      rate: .002,
-      iterations: 30000,
+      rate: .01,
+      iterations: 1000000,
       // error: .005,
       shuffle: true,
       log: 100,

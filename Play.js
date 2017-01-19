@@ -11,7 +11,7 @@ var Network = synaptic.Network;
 var Play = {
   // Current state of learning [STOP, LEARNING]
   state: 'STOP',
-  network : {},
+  network : null,
   // Set this, to verify genome experience BEFORE running it
   shouldCheckExperience: false,
 
@@ -31,7 +31,12 @@ Play.loadnetwork = function(fileName)
 }
 
 
-Play.executeNetwork = function(){
+Play.executeNetwork = function() {
+
+  if(this.network == null) {
+    this.loadnetwork('./neuNetData/default.json');
+  }
+
   if (Play.state == 'STOP') {
     return;
   }

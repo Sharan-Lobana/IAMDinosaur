@@ -1,7 +1,7 @@
 var contrib = require('blessed-contrib')
 var blessed = require('blessed')
 var fs = require('fs');
-
+var config = require('./Config');
 var screen = blessed.screen()
 
 var UI = {};
@@ -127,7 +127,9 @@ UI.init = function (gameManipulator, play) {
     if (play.state == 'STOP') {
       play.state = 'LEARNING';
       gameManipulator.focusGame();
-      play.executeNetwork();
+      if(config.IS_AUTO_PLAYING) {
+        play.executeNetwork();
+      }
     } else {
       play.state = 'STOP';
     }

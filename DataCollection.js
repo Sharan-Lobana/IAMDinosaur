@@ -1,13 +1,14 @@
 var fs = require('fs');
 var GameManipulator = require('./GameManipulator');
 var UI = require('./UI')
+var Config = require('./Config');
 
 var DataCollection = {
   manualData: [],
   numInstances: 0,
-  maxInstances: 20,
+  maxInstances: 50,
   dataDirectory: './manualData',
-  fileNamePrefix: 'sharan_',
+  fileNamePrefix: Config.MANUAL_DATA_FILE_PREFIX,
   value:1,  // Normalised distance of obstacle
   speed:0,  // Speed of approaching obstacle
   size:1,   // Width of obstacle
@@ -26,19 +27,27 @@ DataCollection.saveCurrentInputs = function()
 
 DataCollection.saveInstance = function(res)
 {
-  var instance = [];
-  instance.push(DataCollection.value);
-  instance.push(DataCollection.speed);
-  instance.push(DataCollection.size);
-  instance.push(Date.now() - DataCollection.timeInMs);
-  instance.push(res);
-  DataCollection.manualData.push(instance);
-  DataCollection.numInstances++;
-
-  if(DataCollection.maxNumInstances != -1 && DataCollection.numInstances >= DataCollection.maxInstances)
+  //If the obstacle is near, don't record the norm
+  if( (res - 0.5 <= 0.001 || 0.5 - res <= 0.001) && (DataCollection.value < 0.5))
   {
-    DataCollection.saveToFile();
+      DataCollection.isInputRecorded = false;
   }
+  else 
+  {
+   var instance = [];
+    instance.push(DataCollection.value);
+    instance.push(DataCollection.speed);
+    instance.push(DataCollection.size);
+    instance.push(Date.now() - DataCollection.timeInMs);
+    instance.push(res);
+    DataCollection.manualData.push(instance);
+    DataCollection.numInstances++;
+
+    if(DataCollection.maxNumInstances != -1 && DataCollection.numInstances >= DataCollection.maxInstances)
+    {
+      DataCollection.saveToFile();
+    } 
+  }  
 }
 
 DataCollection.saveToFile = function()

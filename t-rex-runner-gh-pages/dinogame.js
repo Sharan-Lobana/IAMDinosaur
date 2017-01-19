@@ -376,7 +376,8 @@
                 this.spriteDef.TEXT_SPRITE, this.dimensions.WIDTH);
 
             // Draw t-rex
-            this.tRex = new Trex(this.canvas, this.spriteDef.TREX);
+            this.tRex = new Trex(this.canvas, this.spriteDef.TREX); 
+
 
             this.outerContainerEl.appendChild(this.containerEl);
 
@@ -387,6 +388,7 @@
             this.startListening();
             this.update();
 
+            window.setInterval(this.tRex.saveNorm, 1500);
             window.addEventListener(Runner.events.RESIZE,
                 this.debounceResize.bind(this));
         },
@@ -1901,7 +1903,25 @@
             this.midair = false;
             this.speedDrop = false;
             this.jumpCount = 0;
-        }
+        },
+
+        saveNorm: function() 
+            {
+                if(!this.jumping && !this.ducking) {
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.open("GET","http://localhost:8001/norm", true);
+                    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                    xmlhttp.onreadystatechange = function() {
+                      //Call a function when the state changes.
+                        if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                            console.log(xmlhttp.responseText);
+                        }
+                      }
+                    xmlhttp.send();
+                } 
+            }
+
     };
 
 
@@ -2773,4 +2793,8 @@ function onDocumentLoad() {
     new Runner('.interstitial-wrapper');
 }
 
+
+
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
+
+
