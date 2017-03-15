@@ -376,7 +376,7 @@
                 this.spriteDef.TEXT_SPRITE, this.dimensions.WIDTH);
 
             // Draw t-rex
-            this.tRex = new Trex(this.canvas, this.spriteDef.TREX); 
+            this.tRex = new Trex(this.canvas, this.spriteDef.TREX);
 
 
             this.outerContainerEl.appendChild(this.containerEl);
@@ -705,6 +705,7 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.open("GET","http://localhost:8001/keydown/duckstart", true);
                 xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
 
                 xmlhttp.onreadystatechange = function() {
                   //Call a function when the state changes.
@@ -734,7 +735,7 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.open("GET","http://localhost:8001/keyup/jumpend", true);
                 xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+                //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
                 xmlhttp.onreadystatechange = function() {
                   //Call a function when the state changes.
                     if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -751,7 +752,7 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.open("GET","http://localhost:8001/keyup/duckend", true);
                 xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+                //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
                 xmlhttp.onreadystatechange = function() {
                   //Call a function when the state changes.
                     if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -777,7 +778,7 @@
             //
             // xmlhttp.open("GET","http://localhost:8001/keyup", true);
             // xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            //
+            // //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
             // xmlhttp.onreadystatechange = function() {
             //   //Call a function when the state changes.
             //     if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -1806,7 +1807,7 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.open("GET","http://localhost:8001/keydown/jumpstart", true);
                 xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+                //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
                 xmlhttp.onreadystatechange = function() {
                   //Call a function when the state changes.
                     if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -1905,13 +1906,13 @@
             this.jumpCount = 0;
         },
 
-        saveNorm: function() 
+        saveNorm: function()
             {
                 if(!this.jumping && !this.ducking) {
                     var xmlhttp = new XMLHttpRequest();
                     xmlhttp.open("GET","http://localhost:8001/norm", true);
                     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+                    //xmlhttp.setRequestHeader("Access-Control-Allow-Origin","*");
                     xmlhttp.onreadystatechange = function() {
                       //Call a function when the state changes.
                         if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -1919,7 +1920,7 @@
                         }
                       }
                     xmlhttp.send();
-                } 
+                }
             }
 
     };
@@ -2796,5 +2797,3 @@ function onDocumentLoad() {
 
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
-
-

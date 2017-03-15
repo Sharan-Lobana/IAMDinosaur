@@ -432,9 +432,9 @@ GameManipulator.setGameOutput = function (outputs){
 // Simply maps an real number to string actions
 //
 GameManipulator.getDiscreteState = function (value){
-  if (value <= 0.75) {
+  if (value <= 0.3) {
     return 'DOWN'
-  } else if(value > 0.8  ) {
+  } else if(value > 0.55  ) {
     return 'JUMP';
   }
 

@@ -49,7 +49,7 @@ if(isCollecting == true)
   {
     var path = url.parse(request.url).pathname;
 
-    if(path == '/norm') 
+    if(path == '/norm')
     {
       DataCollection.saveCurrentInputs();
       DataCollection.saveInstance(0.5);
