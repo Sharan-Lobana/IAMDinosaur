@@ -7,11 +7,12 @@ var DataCollection = {
   manualData: [],
   numInstances: 0,
   maxInstances: 20,
-  dataDirectory: './manualData',
+  dataDirectory: Config.DATA_DIRECTORY,
   fileNamePrefix: Config.MANUAL_DATA_FILE_PREFIX,
   value:1,  // Normalised distance of obstacle
   speed:0,  // Speed of approaching obstacle
   size:1,   // Width of obstacle
+  valueTwo:1, //Distance of head level terodactyl
   timeInMs:0, // Start time of keypress
   isInputRecorded:false // Boolean value set to true on recording inputs
 };
@@ -21,8 +22,10 @@ DataCollection.saveCurrentInputs = function()
   DataCollection.value = GameManipulator.sensors[0].value;
   DataCollection.speed = GameManipulator.sensors[0].speed;
   DataCollection.size = GameManipulator.sensors[0].size;
+  DataCollection.valueTwo = GameManipulator.sensors[1].value;
   DataCollection.timeInMs = Date.now();
   DataCollection.isInputRecorded = true;
+  UI.logger.log(DataCollection.value+" "+DataCollection.speed+" "+DataCollection.size+" "+DataCollection.valueTwo);
 }
 
 DataCollection.saveInstance = function(res)
@@ -38,8 +41,9 @@ DataCollection.saveInstance = function(res)
     instance.push(DataCollection.value);
     instance.push(DataCollection.speed);
     instance.push(DataCollection.size);
-    instance.push(Date.now() - DataCollection.timeInMs);
+    instance.push(DataCollection.valueTwo);
     instance.push(res);
+    instance.push(Date.now() - DataCollection.timeInMs);
     DataCollection.manualData.push(instance);
     DataCollection.numInstances++;
 
@@ -67,7 +71,6 @@ DataCollection.saveToFile = function()
       DataCollection.manualData = [];
       DataCollection.numInstances = 0;
     }
-
     // UI.refreshFiles();
   });
 }

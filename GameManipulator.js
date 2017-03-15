@@ -49,6 +49,14 @@ var GameManipulator = {
       size: 0,
       computeSize: true,
     },
+    {
+      lastValue:1, // sensor 2 : for detecting the cacti/pterodactyl, that is at the head level.
+
+      value:null,
+      offset:[69,-40], // this point is somwhere near the head of the dinosaur;
+      step: [4,0], // step size can be reduced...
+      length: 0.3,
+    },
   ]
 };
 
@@ -174,7 +182,10 @@ GameManipulator.readGameState = function () {
     GameManipulator.sensors[0].speed = 0;
     GameManipulator.sensors[0].size = 0;
 
-    // Clar Output flags
+    GameManipulator.sensors[1].value = 1;
+    GameManipulator.sensors[1].lastValue = 1;
+
+    // Clear Output flags
     GameManipulator.lastOutputSet = 'NONE';
 
     // Trigger callback and clear
@@ -249,6 +260,8 @@ GameManipulator.computePoints = function () {
   for (var k in GameManipulator.sensors) {
     var sensor = GameManipulator.sensors[k];
 
+    //If a cactus has been jumped over or a terodactyl has been ducked
+    //then increment the points
     if (sensor.value > 0.5 && sensor.lastValue < 0.3) {
       GameManipulator.points++;
       // console.log('POINTS: '+GameManipulator.points);
@@ -271,106 +284,128 @@ GameManipulator.computePoints = function () {
 GameManipulator.readSensors = function () {
   var offset = GameManipulator.offset;
 
-  var startTime = Date.now();
+  //Begin:Computing value of first sensor
+  var sensor = GameManipulator.sensors[0];
 
-  for (var k in GameManipulator.sensors) {
+  // Calculate absolute position of ray tracing
+  var start = [
+    offset[0] + sensor.offset[0],
+    offset[1] + sensor.offset[1],
+  ];
 
-    var sensor = GameManipulator.sensors[k];
+  var end = Scanner.scanUntil(
+    // console.log(
+      // Start position
+      [start[0], start[1]],
+      // Skip pixels
+      sensor.step,
+      // Searching Color
+      COLOR_DINOSAUR,
+      // Invert mode?
+      false,
+      // Iteration limit
+      (GameManipulator.width * sensor.length) / sensor.step[0]);
 
-    // Calculate absolute position of ray tracing
-    var start = [
-      offset[0] + sensor.offset[0],
-      offset[1] + sensor.offset[1],
-    ];
+  // Save lastValue
+  sensor.lastValue = sensor.value;
 
-    // Compute cursor forwarding
-    var forward = sensor.value*GameManipulator.width*0.8 * sensor.length;
+  // Calculate the Sensor value
+  if (end) {
+    sensor.value = (end[0] - start[0]) / (GameManipulator.width * sensor.length);
 
-    var end = Scanner.scanUntil(
-      // console.log(
-        // Start position
-        [start[0], start[1]],
-        // Skip pixels
-        sensor.step,
-        // Searching Color
-        COLOR_DINOSAUR,
-        // Invert mode?
-        false,
-        // Iteration limit
-        (GameManipulator.width * sensor.length) / sensor.step[0]);
+    // Calculate size of obstacle
+    //TODO: check the width of obstacles (currently 75)
+    var endPoint = Scanner.scanUntil(
+      [end[0] + 75, end[1]],
+      [-2, 0],
+      COLOR_DINOSAUR,
+      false,
+      75 / 2
+    );
 
-    // Save lastValue
-    sensor.lastValue = sensor.value;
+    // If no end point, set the start point as end
+    if (!endPoint) {
+      endPoint = end;
+    }
 
-    // Calculate the Sensor value
-    if (end) {
-      sensor.value = (end[0] - start[0]) / (GameManipulator.width * sensor.length);
-
-      // Calculate size of obstacle
-      //TODO: check the width of obstacles (currently 75)
-      var endPoint = Scanner.scanUntil(
-        [end[0] + 75, end[1]],
-        [-2, 0],
-        COLOR_DINOSAUR,
-        false,
-        75 / 2
-      );
-
-      // If no end point, set the start point as end
-      if (!endPoint) {
-        endPoint = end;
-      }
-
-      //TODO Improve normalisation of obstacle size
-      var sizeTmp = (endPoint[0] - end[0]) / 100.0;
-      if (GameManipulator.points == sensor.lastScore) {
-        // It's the same obstacle. Set size to "max" of both
-        sensor.size = Math.max(sensor.size, sizeTmp);
-      } else {
-        sensor.size = sizeTmp;
-      }
-
-
-      // We use the current score to check for object equality
-      sensor.lastScore = GameManipulator.points;
-
-      // sensor.size = Math.max(sensor.size, endPoint[0] - end[0]);
-
+    //TODO Improve normalisation of obstacle size
+    var sizeTmp = (endPoint[0] - end[0]) / 100.0;
+    if (GameManipulator.points == sensor.lastScore) {
+      // It's the same obstacle. Set size to "max" of both
+      sensor.size = Math.max(sensor.size, sizeTmp);
     } else {
-      sensor.value = 1;
-      sensor.size = 0;
+      sensor.size = sizeTmp;
     }
 
+
+    // We use the current score to check for object equality
+    sensor.lastScore = GameManipulator.points;
+
+    // sensor.size = Math.max(sensor.size, endPoint[0] - end[0]);
+
+  } else {
+    sensor.value = 1;
+    sensor.size = 0;
+  }
+
+  // Compute speed
+  var dt = (Date.now() - sensor.lastComputeSpeed) / 1000;
+  sensor.lastComputeSpeed = Date.now();
+
+  if (sensor.value < sensor.lastValue) {
     // Compute speed
-    var dt = (Date.now() - sensor.lastComputeSpeed) / 1000;
-    sensor.lastComputeSpeed = Date.now();
+    var newSpeed = (sensor.lastValue - sensor.value) / dt;
 
-    if (sensor.value < sensor.lastValue) {
-      // Compute speed
-      var newSpeed = (sensor.lastValue - sensor.value) / dt;
+    sensor.lastSpeeds.unshift(newSpeed);
 
-      sensor.lastSpeeds.unshift(newSpeed);
-
-      while (sensor.lastSpeeds.length > 10) {
-        sensor.lastSpeeds.pop();
-      }
-
-      //TODO Improve speed calculation
-      // Take Average
-      var avgSpeed = 0;
-      for (var k in sensor.lastSpeeds) {
-        avgSpeed += sensor.lastSpeeds[k] / sensor.lastSpeeds.length;
-      }
-
-      //TODO: Find the purpose of subtracting 1.5 from sensor speed
-      sensor.speed = Math.max(avgSpeed - 1.5, sensor.speed);
-
+    while (sensor.lastSpeeds.length > 10) {
+      sensor.lastSpeeds.pop();
     }
 
-    // Save length/size of sensor value
-    sensor.size = Math.min(sensor.size, 1.0);
+    //TODO Improve speed calculation
+    // Take Average
+    var avgSpeed = 0;
+    for (var k in sensor.lastSpeeds) {
+      avgSpeed += sensor.lastSpeeds[k] / sensor.lastSpeeds.length;
+    }
 
-    startTime = Date.now();
+    //TODO: Find the purpose of subtracting 1.5 from sensor speed
+    sensor.speed = Math.max(avgSpeed - 1.5, sensor.speed);
+
+  }
+
+  // Save length/size of sensor value
+  sensor.size = Math.min(sensor.size, 1.0);
+
+  // End:Computing value of first sensor
+  // Begin:Computing value of second sensor
+  sensor = GameManipulator.sensors[1];
+
+  // Calculate absolute position of ray tracing
+  start = [
+    offset[0] + sensor.offset[0],
+    offset[1] + sensor.offset[1],
+  ];
+
+  end = Scanner.scanUntil(
+    // console.log(
+      // Start position
+      [start[0], start[1]],
+      // Skip pixels
+      sensor.step,
+      // Searching Color
+      COLOR_DINOSAUR,
+      // Invert mode?
+      false,
+      // Iteration limit
+      (GameManipulator.width * sensor.length) / sensor.step[0]);
+
+  // Save lastValue
+  sensor.lastValue = sensor.value;
+
+  // Calculate the Sensor value
+  if (end) {
+    sensor.value = (end[0] - start[0]) / (GameManipulator.width * sensor.length);
   }
 
   // Compute points
@@ -382,19 +417,19 @@ GameManipulator.readSensors = function () {
 
 // Set action to game
 // Values:
-//  0.00 to  0.45: DOWN
-//  0.45 to  0.55: NOTHING
-//  0.55 to  1.00: UP (JUMP)
+//  0.0 to  0.4: DOWN
+//  0.4 to  0.6: NOTHING
+//  0.6 to  1.0: UP (JUMP)
 var PRESS = 'down';
 var RELEASE = 'up';
 
 GameManipulator.lastOutputSet = 'NONE';
 GameManipulator.lastOutputSetTime = 0;
 
-GameManipulator.setGameOutput = function (outputs){
+GameManipulator.setGameOutput = function (output){
 
-  GameManipulator.gameOutput = outputs[1];
-  GameManipulator.gameOutputString = GameManipulator.getDiscreteState(outputs[1]);
+  GameManipulator.gameOutput = output;
+  GameManipulator.gameOutputString = GameManipulator.getDiscreteState(output);
 
   if (GameManipulator.gameOutputString == 'DOWN') {
     // Skew
@@ -432,9 +467,9 @@ GameManipulator.setGameOutput = function (outputs){
 // Simply maps an real number to string actions
 //
 GameManipulator.getDiscreteState = function (value){
-  if (value <= 0.3) {
+  if (value <= 0.45) {
     return 'DOWN'
-  } else if(value > 0.55  ) {
+  } else if(value > 0.55) {
     return 'JUMP';
   }
 

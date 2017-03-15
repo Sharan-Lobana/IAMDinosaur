@@ -49,12 +49,13 @@ Play.executeNetwork = function() {
         Play.gm.sensors[0].value,
         Play.gm.sensors[0].size,
         Play.gm.sensors[0].speed,
+        Play.gm.sensors[1].value,
       ];
       // console.log(inputs);
       // Apply to network
-      var outputs = Play.network.activate(inputs);
+      var output = Play.network.activate(inputs);
 
-      Play.gm.setGameOutput(outputs);
+      Play.gm.setGameOutput(output);
     }
 
     // Wait game end, and compute fitness

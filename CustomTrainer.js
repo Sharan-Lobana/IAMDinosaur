@@ -4,11 +4,13 @@ var fs = require('fs');
 // var UI = require('./UI');
 var Architect = synaptic.Architect;
 var Trainer = synaptic.Trainer;
+
+//TODO: Populate this list with filtered data
 var listOfJsonData = [
-  'sharan_new_1484845935717__50.json',
+  'sharan_new_1489609073117__60.json',
 ];
 
-var dataDirectory = config.DATA_DIRECTORY;
+var dataDirectory = config.FILTERED_DATA_DIRECTORY;
 var trainingData = [];
 
 var buildNetwork = function (numInputs, numOutputs) {
@@ -35,23 +37,22 @@ CustomTrainer.trainNetwork = function()
     current = trainingData[k];
     // console.log("Current.\n");
     // console.log(current);
-    tempdict['input'] = current.slice(0,3); // Take the first three values as input
-    tempdict['output'] = current.slice(3,5);  //Take the last two values as output
-    tempdict['output'][0] /= 200.0;
+    tempdict['input'] = current.slice(0,4); // Take the first three values as input
+    tempdict['output'] = current.slice(4,5);  //Take the last two values as output
     trainingSet.push(tempdict);
   }
   console.log(trainingSet);
-  var neuralnet = buildNetwork(3,2);
+  var neuralnet = buildNetwork(4,1);
   var trainer = new Trainer(neuralnet);
 
 
   trainer.train(trainingSet,{
       rate: .01,
-      iterations: 1000000,
+      iterations: 100000,
       // error: .005,
       shuffle: true,
       log: 100,
-      cost: Trainer.cost.CROSS_ENTROPY,// cost.MSE can be used as well
+      cost: Trainer.cost.MSE,// cost.CROSS_ENTROPY can be used as well
       // schedule: {
       // every: 500, // repeat this task every 500 iterations
       // do: function(data) {

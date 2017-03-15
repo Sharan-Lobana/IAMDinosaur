@@ -8,9 +8,11 @@ var DataCollection = require('./DataCollection');
 var config = require('./Config');
 var train = require('./CustomTrainer');
 var Play = require('./Play');
+var FilterData = require('./FilterData');
 var isCollecting = config.IS_COLLECTING_DATA; //set it to true to collect data on manual training
 var isAutoPlaying = config.IS_AUTO_PLAYING;
 var isTraining = config.IS_TRAINING;
+var isFiltering = config.IS_FILTERING_DATA;
 // Configure Robotjs
 robot.setMouseDelay(1);
 
@@ -112,9 +114,14 @@ if(isAutoPlaying == true)
 {
   console.log("Came here.");
   var neuralNetDir = config.NEURALNET_DATA_DIRECTORY;
-  var fileName = neuralNetDir+"/"+"sharan_new_1484846481377.json";
+  var fileName = neuralNetDir+"/"+"sharan_new_1489609169986.json";
   Play.loadnetwork(fileName);
   Play.executeNetwork();
+}
+if(isFiltering == true)
+{
+  console.log("Filtering user collected data.");
+  FilterData.getFilteredData();
 }
 
 
