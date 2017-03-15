@@ -388,7 +388,8 @@
             this.startListening();
             this.update();
 
-            window.setInterval(this.tRex.saveNorm, 1500);
+            //Not saving norm, will manually replicate the data [1.0,0,0,0,0.5]
+            // window.setInterval(this.tRex.saveNorm, 1500);
             window.addEventListener(Runner.events.RESIZE,
                 this.debounceResize.bind(this));
         },

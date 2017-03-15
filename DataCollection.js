@@ -6,7 +6,7 @@ var Config = require('./Config');
 var DataCollection = {
   manualData: [],
   numInstances: 0,
-  maxInstances: 50,
+  maxInstances: 20,
   dataDirectory: './manualData',
   fileNamePrefix: Config.MANUAL_DATA_FILE_PREFIX,
   value:1,  // Normalised distance of obstacle
@@ -32,7 +32,7 @@ DataCollection.saveInstance = function(res)
   {
       DataCollection.isInputRecorded = false;
   }
-  else 
+  else
   {
    var instance = [];
     instance.push(DataCollection.value);
@@ -46,8 +46,8 @@ DataCollection.saveInstance = function(res)
     if(DataCollection.maxNumInstances != -1 && DataCollection.numInstances >= DataCollection.maxInstances)
     {
       DataCollection.saveToFile();
-    } 
-  }  
+    }
+  }
 }
 
 DataCollection.saveToFile = function()
