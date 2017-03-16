@@ -173,9 +173,12 @@ UI.render = function () {
 
   // Update data
   UI.uiSensors.setData({
-    titles: ['Distance', 'Size', 'Speed', 'Activation'],
+    titles: ['Dist1', 'Dist2', 'Dist3', 'Dist4', 'Size', 'Speed', 'Activation'],
     data: [
       Math.round(UI.gm.sensors[0].value * 100),
+      Math.round(UI.gm.sensors[1].value * 100),
+      Math.round(UI.gm.sensors[2].value * 100),
+      Math.round(UI.gm.sensors[3].value * 100),
       Math.round(UI.gm.sensors[0].size * 100),
       Math.round(UI.gm.sensors[0].speed * 100),
       Math.round(UI.gm.gameOutput * 100),

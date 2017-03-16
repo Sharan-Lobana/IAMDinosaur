@@ -3,19 +3,23 @@ var Config = require('./Config');
 var UI = require('./UI');
 var dataDirectory = Config.DATA_DIRECTORY;
 var listOfUnfilteredData = [
-  'sharan_new_1489607960663__20.json',
-  'sharan_new_1489607989121__20.json',
-  'sharan_new_1489608011579__20.json',
-  'sharan_new_1489608028327__20.json',
+  'sharan_new_1489615626597__20.json',
+  'sharan_new_1489615659979__20.json',
+  'sharan_new_1489615717274__20.json',
+  'sharan_new_1489615764773__20.json',
+  'sharan_new_1489615797289__20.json',
+  'sharan_new_1489615823582__20.json',
+  'sharan_new_1489615878103__20.json',
+  'sharan_new_1489615903336__20.json',
 ];
 
 var FilterData = {
-  numInstancesEach : 20,
+  numInstancesEach : 50,
   removeOutliers: true,
-  outlierZScore: 1.25,
+  outlierZScore: 2.0,
+  normInstancesFraction: 0.5,
   dataDirectory: Config.FILTERED_DATA_DIRECTORY,
   fileNamePrefix: Config.FILTERED_DATA_FILE_PREFIX,
-
 }
 
 FilterData.isOutlier = function(averageData, stDeviation, currentData) {
@@ -108,7 +112,8 @@ FilterData.getFilteredData = function() {
 
   var finalFilteredData = [];
   //Generate NORM data points
-  for(var i = 0; i < FilterData.numInstancesEach; i++) {
+  var count = Math.floor(FilterData.numInstancesEach*FilterData.normInstancesFraction);
+  for(var i = 0; i < count; i++) {
     var dataPoint = [1.0,0,0,1.0,0.5];
     finalFilteredData.push(dataPoint);
   }

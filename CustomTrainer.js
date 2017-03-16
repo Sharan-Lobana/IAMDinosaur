@@ -7,7 +7,7 @@ var Trainer = synaptic.Trainer;
 
 //TODO: Populate this list with filtered data
 var listOfJsonData = [
-  'sharan_new_1489609073117__60.json',
+  'sharan_new_1489616059824__125.json',
 ];
 
 var dataDirectory = config.FILTERED_DATA_DIRECTORY;

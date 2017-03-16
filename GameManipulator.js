@@ -37,9 +37,9 @@ var GameManipulator = {
       lastValue: 1,
 
       value: null,
-      offset: [84, -15], // 64,-15
+      offset: [84, -13], // 64,-15
       step: [4, 0],
-      length: 0.3,
+      length: 0.4,
 
       // Speed
       speed: 0,
@@ -55,6 +55,22 @@ var GameManipulator = {
       value:null,
       offset:[69,-40], // this point is somwhere near the head of the dinosaur;
       step: [4,0], // step size can be reduced...
+      length: 0.4,
+    },
+    {
+      lastValue:1, //Backward sensor for detecting Cactii
+
+      value:null,
+      offset:[25,-15], // this point is somwhere near the head of the dinosaur;
+      step: [-1,0], // step size can be reduced...
+      length: 0.3,
+    },
+    {
+      lastValue:1, //Backward sensor for detecting pterodactyl
+
+      value:null,
+      offset:[25,-40], // this point is somwhere near the head of the dinosaur;
+      step: [-1,0], // step size can be reduced...
       length: 0.3,
     },
   ]
@@ -182,8 +198,11 @@ GameManipulator.readGameState = function () {
     GameManipulator.sensors[0].speed = 0;
     GameManipulator.sensors[0].size = 0;
 
-    GameManipulator.sensors[1].value = 1;
-    GameManipulator.sensors[1].lastValue = 1;
+    for(var i = 1; i <= 3; i++)
+    {
+      GameManipulator.sensors[i].value = 1;
+      GameManipulator.sensors[i].lastValue = 1;
+    }
 
     // Clear Output flags
     GameManipulator.lastOutputSet = 'NONE';
@@ -223,8 +242,8 @@ GameManipulator.startNewGame = function (next) {
       setTimeout(function() {
         // Once reloaded we wait 0.5sec for it to let us start the game with a space.
           robot.keyTap(' ');
-      }, 500);
-    }, 300);
+      }, 1000);
+    }, 2000);
 
     // Refresh state
     GameManipulator.readGameState();
@@ -247,6 +266,8 @@ GameManipulator.reloadPage = function ()
     robot.keyTap('r','control');
   } else if(/^darwin/.test(process.platform)) {
     robot.keyTap('r','command');
+  } else if(/^linux/.test(process.platform)) {
+    robot.keyTap('r','control');
   }
 }
 
@@ -281,7 +302,7 @@ GameManipulator.computePoints = function () {
 // SIZE and it's speed
 //
 // Note: We currently only have a sensor.
-GameManipulator.readSensors = function () {
+GameManipulator.readSensors = function (currentGameSpeed) {
   var offset = GameManipulator.offset;
 
   //Begin:Computing value of first sensor
@@ -348,32 +369,31 @@ GameManipulator.readSensors = function () {
     sensor.size = 0;
   }
 
-  // Compute speed
-  var dt = (Date.now() - sensor.lastComputeSpeed) / 1000;
-  sensor.lastComputeSpeed = Date.now();
-
-  if (sensor.value < sensor.lastValue) {
-    // Compute speed
-    var newSpeed = (sensor.lastValue - sensor.value) / dt;
-
-    sensor.lastSpeeds.unshift(newSpeed);
-
-    while (sensor.lastSpeeds.length > 10) {
-      sensor.lastSpeeds.pop();
-    }
-
-    //TODO Improve speed calculation
-    // Take Average
-    var avgSpeed = 0;
-    for (var k in sensor.lastSpeeds) {
-      avgSpeed += sensor.lastSpeeds[k] / sensor.lastSpeeds.length;
-    }
-
-    //TODO: Find the purpose of subtracting 1.5 from sensor speed
-    sensor.speed = Math.max(avgSpeed - 1.5, sensor.speed);
-
-  }
-
+  // // Compute speed
+  // var dt = (Date.now() - sensor.lastComputeSpeed) / 1000;
+  // sensor.lastComputeSpeed = Date.now();
+  //
+  // if (sensor.value < sensor.lastValue) {
+  //   // Compute speed
+  //   var newSpeed = (sensor.lastValue - sensor.value) / dt;
+  //
+  //   sensor.lastSpeeds.unshift(newSpeed);
+  //
+  //   while (sensor.lastSpeeds.length > 5) {
+  //     sensor.lastSpeeds.pop();
+  //   }
+  //
+  //   //TODO Improve speed calculation
+  //   // Take Average
+  //   var avgSpeed = 0;
+  //   for (var k in sensor.lastSpeeds) {
+  //     avgSpeed += sensor.lastSpeeds[k] / sensor.lastSpeeds.length;
+  //   }
+  //
+  //   sensor.speed = Math.max(avgSpeed, sensor.speed);
+  //   // sensor.speed = newSpeed;
+  // }
+  sensor.speed = currentGameSpeed/12.0;
   // Save length/size of sensor value
   sensor.size = Math.min(sensor.size, 1.0);
 
@@ -406,6 +426,46 @@ GameManipulator.readSensors = function () {
   // Calculate the Sensor value
   if (end) {
     sensor.value = (end[0] - start[0]) / (GameManipulator.width * sensor.length);
+  }
+  else {
+    sensor.value = 1;
+    sensor.size = 0;
+  }
+
+  //Compute the value of the backward sensors
+  for(var i = 2; i < 4; i++) {
+    sensor = GameManipulator.sensors[i];
+
+    // Calculate absolute position of ray tracing
+    start = [
+      offset[0] + sensor.offset[0],
+      offset[1] + sensor.offset[1],
+    ];
+
+    end = Scanner.scanUntil(
+      // console.log(
+        // Start position
+        [start[0], start[1]],
+        // Skip pixels
+        sensor.step,
+        // Searching Color
+        COLOR_DINOSAUR,
+        // Invert mode?
+        false,
+        // Iteration limit
+        50);
+
+    // Save lastValue
+    sensor.lastValue = sensor.value;
+
+    // Calculate the Sensor value
+    if (end) {
+      sensor.value = (start[0] - end[0]) / (GameManipulator.width * sensor.length);
+    }
+    else {
+      sensor.value = 1;
+      sensor.size = 0;
+    }
   }
 
   // Compute points
@@ -469,7 +529,7 @@ GameManipulator.setGameOutput = function (output){
 GameManipulator.getDiscreteState = function (value){
   if (value <= 0.45) {
     return 'DOWN'
-  } else if(value > 0.55) {
+  } else if(value > 0.85) {
     return 'JUMP';
   }
 
