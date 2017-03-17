@@ -1,5 +1,6 @@
 var synaptic = require('synaptic');
 var fs = require('fs');
+var robot = require('robotjs');
 // var async = require('async');
 // var _ = require('lodash');
 
@@ -46,9 +47,12 @@ function getOutput(inputs) {
     }
   }
 
-  if(inputs[0] < Math.max(Math.min(0.9,threshold),0.35))
-  output = 1.0
-  else if((inputs[1] < 0.8 && inputs[0] > 0.9) || inputs[3] < 0.1)
+  if(inputs[0] < Math.max(Math.min(0.9,threshold),0.35)) {
+    console.log(Math.max(Math.min(0.9,threshold),0.35));
+    output = 1.0;
+  }
+
+  else if((inputs[1] < 0.8 && inputs[0] > 0.9) || (inputs[2] > 0.5 && inputs[3] < 0.05 ))
   output = 0.0
 
   return output
@@ -68,14 +72,16 @@ Play.loadnetwork = function(fileName)
 
 Play.executeNetwork = function() {
 
+  console.log("executeNetwork inside");
   if(this.network == null) {
     this.loadnetwork('./neuNetData/default.json');
   }
 
-  if (Play.state == 'STOP') {
-    return;
-  }
+  // if (Play.state == 'STOP') {
+  //   return;
+  // }
 
+  console.log("Debug: Start New Game is called.");
   Play.gm.startNewGame(function (){
 
     // Reads sensor data, and apply network
@@ -100,6 +106,12 @@ Play.executeNetwork = function() {
     // Wait game end, and compute fitness
     Play.gm.onGameEnd = function (points){
       Play.ui.logger.log('Game ended. Total cactus jumped: '+points);
+      //TODO: Write reload
+      Play.gm.reloadPage();
+      setTimeout(function() {
+        robot.keyTap(' ');
+      },
+      1500);
     }
   });
 }

@@ -48,97 +48,95 @@ setInterval(function() {
 setInterval(GameManipulator.readGameState, 200);
 // setInterval(DataCollection.saveOnGameEnd,200);
 
-console.log("Num of instances are "+DataCollection);
 //If manual play mode is on
 
+var server = http.createServer(function(request, response)
 {
-  var server = http.createServer(function(request, response)
-  {
-    var path = url.parse(request.url).pathname;
-    if(isCollecting == true) {
-      if(path == '/norm')
+  // console.log("inside server");
+  var path = url.parse(request.url).pathname;
+  if(isCollecting == true) {
+    if(path == '/norm')
+    {
+      DataCollection.saveCurrentInputs();
+      DataCollection.saveInstance(0.5);
+      // logging mechanism
+      DataCollection.isInputRecorded = false;
+      UI.logger.log(path);
+      response.writeHead(200, {"Content-Type": "text/plain"});
+      response.end("Norm Saved");
+    }
+
+    if(path == "/keydown/jumpstart" || path == "/keydown/duckstart")
+    {
+      DataCollection.saveCurrentInputs();
+      UI.logger.log(path);
+      response.writeHead(200, {"Content-Type": "text/plain"});
+      response.end("Inputs saved in backend");
+    }
+    else if(path == "/keyup/jumpend")
+    {
+      if(DataCollection.isInputRecorded == true)
       {
-        DataCollection.saveCurrentInputs();
-        DataCollection.saveInstance(0.5);
-        // logging mechanism
+        DataCollection.saveInstance(1);
         DataCollection.isInputRecorded = false;
         UI.logger.log(path);
         response.writeHead(200, {"Content-Type": "text/plain"});
-        response.end("Norm Saved");
+        response.end("Jump Finished");
+      }
+      else
+      {
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("No input recorded for given jumpend");
       }
 
-      if(path == "/keydown/jumpstart" || path == "/keydown/duckstart")
+    }
+    else if(path == "/keyup/duckend")
+    {
+      if(DataCollection.isInputRecorded == true)
       {
-        DataCollection.saveCurrentInputs();
+        DataCollection.saveInstance(0);
+        DataCollection.isInputRecorded = false;
         UI.logger.log(path);
         response.writeHead(200, {"Content-Type": "text/plain"});
-        response.end("Inputs saved in backend");
+        response.end("Duck Ended");
       }
-      else if(path == "/keyup/jumpend")
+      else
       {
-        if(DataCollection.isInputRecorded == true)
-        {
-          DataCollection.saveInstance(1);
-          DataCollection.isInputRecorded = false;
-          UI.logger.log(path);
-          response.writeHead(200, {"Content-Type": "text/plain"});
-          response.end("Jump Finished");
-        }
-        else
-        {
-          response.writeHead(200, {"Content-Type": "text/plain"});
-          response.end("No input recorded for given jumpend");
-        }
-
-      }
-      else if(path == "/keyup/duckend")
-      {
-        if(DataCollection.isInputRecorded == true)
-        {
-          DataCollection.saveInstance(0);
-          DataCollection.isInputRecorded = false;
-          UI.logger.log(path);
-          response.writeHead(200, {"Content-Type": "text/plain"});
-          response.end("Duck Ended");
-        }
-        else
-        {
-          response.writeHead(200, {"Content-Type": "text/plain"});
-          response.end("No input recorded for given duckend");
-        }
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("No input recorded for given duckend");
       }
     }
-    if(path == "/currentSpeed") {
-      if (request.method == 'POST') {
-          var body = '';
-          request.on('data', function (data) {
-              body += data;
-              // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-              if (body.length > 1e7) {
-                  // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-                  request.connection.destroy();
-              }
-          });
-          request.on('end', function () {
-              var POST = qs.parse(body);
-              // use POST
-              currentGameSpeed = POST['currentSpeed'];
-          });
-          response.writeHead(200, {"Content-Type": "text/plain"});
-          response.end("Current Speed"+currentGameSpeed/12.0);
-        }
-    }
-  }).listen(8001);
+  }
+  if(path == "/currentSpeed") {
+    if (request.method == 'POST') {
+        var body = '';
+        request.on('data', function (data) {
+            body += data;
+            // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+            if (body.length > 1e7) {
+                // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+                request.connection.destroy();
+            }
+        });
+        request.on('end', function () {
+            var POST = qs.parse(body);
+            // use POST
+            currentGameSpeed = POST['currentSpeed'];
+        });
+        response.writeHead(200, {"Content-Type": "text/plain"});
+        response.end("Current Speed"+currentGameSpeed/12.0);
+      }
+  }
+}).listen(8001);
 
-  console.log("Server Initialized");
-}
+console.log("Server Initialized");
+
 if(isTraining == true)
 {
   train.trainNetwork();
 }
 if(isAutoPlaying == true)
 {
-  console.log("Came here.");
   var neuralNetDir = config.NEURALNET_DATA_DIRECTORY;
   var fileName = neuralNetDir+"/sharan_new_1489616200634.json";
   Play.loadnetwork(fileName);

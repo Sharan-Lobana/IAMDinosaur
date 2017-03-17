@@ -170,11 +170,13 @@ GameManipulator.readGameState = function () {
 
   if (found && GameManipulator.gamestate != 'OVER') {
     GameManipulator.gamestate = 'OVER';
-
+    console.log("GAME OVER");
     // Clear keys
     GameManipulator.setGameOutput(0.5);
 
     // Trigger callback and clear
+    if(!GameManipulator.onGameEnd)
+    console.log("Game Manipulator onGameEnd is null");
     GameManipulator.onGameEnd && GameManipulator.onGameEnd(GameManipulator.points);
     GameManipulator.onGameEnd = null;
 
@@ -208,6 +210,10 @@ GameManipulator.readGameState = function () {
     GameManipulator.lastOutputSet = 'NONE';
 
     // Trigger callback and clear
+    console.log("Callback GameStart will be triggered");
+    // if(!GameManipulator.onGameStart)
+    // console.log("onGame start is null");
+
     GameManipulator.onGameStart && GameManipulator.onGameStart();
     GameManipulator.onGameStart = null;
 
@@ -222,16 +228,42 @@ GameManipulator.readGameState = function () {
 var _startKeyInterval;
 GameManipulator.startNewGame = function (next) {
 
+  if(!GameManipulator.onSensorData)
+  console.log("onSensorData is not set");
   // Refresh state
+  console.log('abc');
+  console.log("\n\nThe game state is "+GameManipulator.gamestate);
   GameManipulator.readGameState();
+  console.log("Something should be logged");
 
+  if(GameManipulator.gamestate == 'PLAYING') {
+    next && next(); //This sets the function onSensorData and onGameEnd
+    console.log("Game state was playing. OnSensorData was set.");
+  }
   // If game is already over, press space
   if (GameManipulator.gamestate == 'OVER') {
     clearInterval(_startKeyInterval);
+    // if(_startKeyInterval) {
+    //   console.log("Start Key interval wasn't null");
+    //
+    // }
+    // else {
+    //   console.log("Start key interval was null");
+    //   // Press space to begin game (repeatedly)
+    //   _startKeyInterval = setInterval(function (){
+    //     // Due to dino slowly gliding over the screen after multiple restarts, its better to just reload the page
+    //     GameManipulator.reloadPage();
+    //     setTimeout(function() {
+    //       // Once reloaded we wait 0.5sec for it to let us start the game with a space.
+    //         robot.keyTap(' ');
+    //     }, 1000);
+    //   }, 2000);
+    // }
 
     // Set start callback
-    GameManipulator.onGameStart = function (argument) {
+    GameManipulator.onGameStart = function() {
       clearInterval(_startKeyInterval);
+      // console.log("Next will be called after this", next);
       next && next();
     };
 
